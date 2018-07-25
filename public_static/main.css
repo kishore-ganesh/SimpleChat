@@ -1,0 +1,17 @@
+.online
+{
+    padding: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+
+.messageitem
+{
+    margin-bottom: 10px;
+    border:1px black solid;
+
+}
+
+.hidden
+{
+    display: none;
+}
