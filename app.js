@@ -15,6 +15,7 @@ const sequelize = new Sequelize({
   });
 
 const Op=sequelize.Op;
+const models=require('./models.js');
 
 
 // const sequelize=new Sequelize('database', {
@@ -35,18 +36,11 @@ app.use(express.static('public_static'))
 app.post('/users', (req, res)=>{
 
     userlist=getUserList();
-    console.log(userlist);
+    // console.log(userlist);
     res.send(JSON.stringify(userlist));
 })
 
-function sendInbox(socket, userdb)
-{
-    userdb.findAll().then((items)=>{
-        
-        //console.log(items[0].ravi);
-        socket.emit('message', {items: items});
-    });
-}
+
 
 function defineModel(name)
 {
@@ -63,27 +57,21 @@ function returnMessages(from, to)
 {   
     return new Promise((resolve, reject)=>{
 
-        
-        messagesdb.sync().then(()=>{
+        todb=defineModel(to);
+        todb.sync().then(()=>{
 
-            messagesdb.findAll(
+            todb.findAll(
                 {
                     where: {
         
-                        from:{
-                            [Op.or]:[from, to]
-        
-                        },
-                        to: {
-                            [Op.or]:[from, to]
-                        }
-        
+                      [Op.or] : {from:from,
+                             to: from} //All messages from from and to from
                     }
         
                 }    
                 ).then((messages)=>{
         
-                    console.log(messages);
+                     console.log(messages);
                     resolve(messages);
                 })
         })
@@ -91,15 +79,7 @@ function returnMessages(from, to)
     })
 }
 
-function emitMessage(username, message)
-{
-    usersockets=users[username];
-    usersockets.forEach((user)=>{
 
-        user.emit('message', message);
-    })
-
-}
 
 function sendMessage(from, to, message)
 {
@@ -110,30 +90,33 @@ function sendMessage(from, to, message)
         to: to,
         messages: message}]}
 
-    emitMessage(from, messageobj);
-    emitMessage(to, messageobj);
+//    console.log(users.length);
+   console.log(from+" "+to);
+   io.to(from).emit('message',messageobj);
+   io.to(to).emit('message',messageobj);
+
+   fromdb=defineModel(from);
+   todb=defineModel(to);
 
 
 
+//    updateDB(messagesdb, from, to, message);
+   updateDB(fromdb, from, to, message);
+   updateDB(todb, from, to, message);
 
-    messagesdb.create({from: from, to: to, messages: message});
+    
 
 
 }
 
+function updateDB(db, from, to, message)
+{
+    db.create({from: from, to: to, messages: message});
+}
+
 function getUserList()
 {
-    userlist=Object.keys(users);
-    processedUserList=[];
-    userlist.forEach((user)=>{
-
-        if(users[user].length>=1)
-        {
-            processedUserList.push(user);
-        }
-
-    })
-    return processedUserList;
+    return users;
     //make this more efficient
 }
 
@@ -149,19 +132,19 @@ io.on('connection', (socket)=>{
     socket.on('initialize', (data)=>{
 
         console.log('initializing');
-       // socket.join(data.username);
+        socket.join(data.username);
         username=data.username;
-        if(!users[username])
-        {
-            users[username]=[];
-        }
-
-        users[username].push(socket);
-        //users.push(username);
+       
+        users.push(username);
+        // console.log(users);
         //console.log(username.toString());
 
-        
+        userdb=defineModel(username);
+        userdb.sync();
         io.emit('updatelist');
+        // io.to(username).emit({
+        //     items:[{from:"server", to: "client", messages: "initialized"}]
+        // })
 
 
 
@@ -171,7 +154,7 @@ io.on('connection', (socket)=>{
     socket.on('userSelected', (data)=>{
 
         selectedUser=data.selectedUser;
-        returnMessages(username, selectedUser).then((messages)=>{
+        returnMessages(selectedUser, username).then((messages)=>{
         
             
             socket.emit('message', {items:messages});
@@ -193,12 +176,9 @@ io.on('connection', (socket)=>{
         console.log("Disconnecting from room")
         //socket.leave(username);
       //  console.log(users[username]);
-        if(users[username])
-        {
-            users[username].splice(0,1);
-        }
+     
         
-        //users.splice(users.indexOf(username),1);
+        users.splice(users.indexOf(username),1);
         io.emit('updatelist');
         
     })

@@ -61,15 +61,26 @@ window.onload=function()
 
     socket.on('message', (data)=>{
 
+        console.log("recieved")
         console.log(data);
         items=data.items;
         console.log(data)
-        console.log("recieved")
+       
         items.forEach((item)=>{
             //console.log(item..message)
             var attr;
+
+            console.log(item.messages);
             
-            $("#inbox").append($('<div>', {class:"messageitem"}).html("<h3>"+item.from+"</h3>"+item.messages));
+            if(item.from==selectedUser || item.to==selectedUser)
+           {
+               var from=item.from;
+               if(item.from==username)
+               {
+                   from="Me";
+               }
+                $("#inbox").append($('<div>', {class:"messageitem"}).html("<h3>"+from+"</h3>"+item.messages));
+            }
         })
        
 
