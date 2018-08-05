@@ -24,3 +24,5 @@ function defineModel(name)
         messages: Sequelize.STRING
     });
 }
+
+module.exports={sequelize, defineModel};
