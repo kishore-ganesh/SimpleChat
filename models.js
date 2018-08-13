@@ -30,4 +30,6 @@ function defineModel(name) {
   });
 }
 
-module.exports = { sequelize, defineModel, usermodel };
+users = [];
+
+module.exports = { sequelize, defineModel, usermodel, users };

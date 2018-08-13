@@ -28,7 +28,7 @@ function onSocketConnection(socket)
         var username;
         var selectedUser;
         var userdb;
-        console.log(users);
+        //console.log(users);
     
         io.emit('updatelist');
         
@@ -37,7 +37,7 @@ function onSocketConnection(socket)
             console.log('initializing');
             socket.join(data.username);
             username=data.username;
-            users.push(username);
+            controller.addToUserList(username);
           ///  console.log(users);
             // console.log(users);
             //console.log(username.toString());
@@ -81,7 +81,7 @@ function onSocketConnection(socket)
           //  console.log(users[username]);
          
             
-            users.splice(users.indexOf(username),1);
+            controller.deleteFromUserList(username);
             io.emit('updatelist');
             
         })

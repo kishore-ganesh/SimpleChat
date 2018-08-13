@@ -58,10 +58,29 @@ function createUser(username, password) {
   });
 }
 
+function getUserList() {
+    // console.log(users.length);
+    return models.users;
+    //make this more efficient
+  }
+
+function addToUserList(username)
+{
+    models.users.push(username);
+}
+
+function deleteFromUserList(username)
+{
+    models.users.splice(users.indexOf(username),1);
+}
+
 module.exports = {
   returnMessages,
   updateDB,
   findUserbyID,
   findUserinDB,
-  createUser
+  createUser,
+  getUserList,
+  addToUserList,
+  deleteFromUserList
 };
