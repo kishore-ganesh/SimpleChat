@@ -12,8 +12,6 @@ const routes=require('./router.js');
 sockets.initializeSocket(server);
 sockets.startListening();
 
-
-
 app.use(session({ secret: "cat", resave: true, saveUninitialized: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

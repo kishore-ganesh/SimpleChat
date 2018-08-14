@@ -3,6 +3,7 @@ function refreshUserList()
     return new Promise((resolve, reject)=>{
 
         $.post('/users', (JSONdata)=>{
+
             data=JSON.parse(JSONdata);
             $("#userlist").html("");
             dataset=new Set(data);
@@ -28,14 +29,19 @@ window.onload=function()
     var username;
     var selectedUser;
 
-    
+    $.post("/user", (JSONdata)=>{
 
-    $("#adduser").click(()=>
+        username=JSON.parse(JSONdata).username;
+        console.log(username);
+        if(username)
         {
-          username=$("#username").val();
-          socket.emit('initialize', {username: username});
-          $("#registration").toggleClass("hidden");
-        })
+            socket.emit('handshake', {
+                username: username
+            })
+        }
+    })
+
+    
 
     $("#userlist").on('click', ".userlistitem", (e)=>{
 
@@ -44,6 +50,7 @@ window.onload=function()
             console.log("clicked")
             selectedUser=e.currentTarget.innerHTML;
             console.log(selectedUser);
+            $("#inbox").html("");
             socket.emit('userSelected', {selectedUser: selectedUser});
             $("#forSending").toggleClass("hidden");
             
@@ -62,15 +69,15 @@ window.onload=function()
     socket.on('message', (data)=>{
 
         console.log("recieved")
-        console.log(data);
+        //console.log(data);
         items=data.items;
-        console.log(data)
+        //console.log(data)
        
         items.forEach((item)=>{
             //console.log(item..message)
             var attr;
 
-            console.log(item.messages);
+            //console.log(item.messages);
             
             if(item.from==selectedUser || item.to==selectedUser)
            {
