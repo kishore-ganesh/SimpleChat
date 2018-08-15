@@ -1,0 +1,14 @@
+.container
+{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.outercontainer
+{
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    height: 100vh;
+
+}
