@@ -82,6 +82,21 @@ function deleteFromUserList(username)
     models.users.splice(users.indexOf(username),1);
 }
 
+function getAllUsers()
+{
+ return new Promise((resolve, reject)=>{
+  var userslist=[];
+  usermodel.findAll({attributes:['username']}).then(list=>{
+    list.forEach((listitem)=>{
+      userslist.push(listitem.username);
+    })
+
+    resolve(userslist);
+
+  })
+ })
+}
+
 module.exports = {
   returnMessages,
   updateDB,
@@ -90,5 +105,6 @@ module.exports = {
   createUser,
   getUserList,
   addToUserList,
-  deleteFromUserList
+  deleteFromUserList,
+  getAllUsers
 };

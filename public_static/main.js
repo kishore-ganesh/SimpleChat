@@ -23,6 +23,31 @@ function refreshUserList()
     
 }
 
+function getAllUsers()
+{
+    return new Promise((resolve, reject)=>{
+
+        $.post('/allusers', (JSONdata)=>{
+
+            data=JSON.parse(JSONdata);
+            $("#userlist").html("");
+            dataset=new Set(data);
+            dataset.forEach((user)=>{
+                
+                $("#alluserslist").append($("<li>", {class: "userlistitem"}).html(user));
+    
+            })
+
+          //  console.log("reachedEnd");
+            
+            resolve();
+    
+            
+        })
+    })
+    
+}
+
 window.onload=function()
 {   
     var socket=io();
@@ -41,9 +66,11 @@ window.onload=function()
         }
     })
 
+    getAllUsers();
+
     
 
-    $("#userlist").on('click', ".userlistitem", (e)=>{
+    $(".userslist").on('click', ".userlistitem", (e)=>{
 
         
                 
@@ -52,7 +79,7 @@ window.onload=function()
             console.log(selectedUser);
             $("#inbox").html("");
             socket.emit('userSelected', {selectedUser: selectedUser});
-            $("#forSending").toggleClass("hidden");
+            $("#forSending").removeClass("hidden");
             //fix this
         
     })
@@ -79,7 +106,7 @@ window.onload=function()
 
             //console.log(item.messages);
             
-            if(item.from==selectedUser || item.to==selectedUser)
+            if((item.from==selectedUser && item.to==username)|| (item.to==selectedUser&&item.from==username))
            {
                var from=item.from;
                if(item.from==username)

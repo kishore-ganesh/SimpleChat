@@ -23,6 +23,15 @@ router.post("/users", (req, res) => {
     res.send(JSON.stringify(userlist));
   });
 
+router.post("/allUsers", (req, res)=>{
+
+  controller.getAllUsers().then((userslist)=>{
+    console.log(userslist);
+    res.send(JSON.stringify(userslist));
+  })
+  
+})
+
 router.get("/login", (req, res) => {
   res.sendFile(__dirname + "/public_static/login.html");
 });
