@@ -16,7 +16,8 @@ function startListening() {
 
 function onSocketConnection(socket) {
   {
-    //var username;
+    var username;  //where was username defined
+    //sending username is nsecure
     var selectedUser;
     var userdb;
     console.log("onSocketConnection");
@@ -45,7 +46,9 @@ function onSocketConnection(socket) {
 
     socket.on("userSelected", data => {
       console.log("emitting");
+      console.log(username);
       selectedUser = data.selectedUser;
+      console.log(selectedUser+" "+username);
       controller.returnMessages(selectedUser, username).then(messages => {
         io.to(username).emit("message", { items: messages });
       });
@@ -63,7 +66,9 @@ function onSocketConnection(socket) {
       //socket.leave(username);
       //  console.log(users[username]);
 
-      controller.deleteFromUserList(username);
+      if (username) {
+        controller.deleteFromUserList(username);
+      }
       io.emit("updatelist");
     });
   }

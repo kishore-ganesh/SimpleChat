@@ -49,11 +49,15 @@ router.get("/register", (req, res) => {
 router.post("/register", (req, res) => {
   // implement hashing
 
+  
   username = req.body.username;
   password = req.body.password;
+  //console.log(username +" "+ password)
+  auth.createUser(username, password).then(()=>{
+    res.redirect("/login");
+  })
   //console.log(username);
-  controller.createUser(username, password);
-  res.redirect("/login"); // implement auto log in
+   // implement auto log in
 });
 
 module.exports = router;

@@ -53,7 +53,7 @@ window.onload=function()
             $("#inbox").html("");
             socket.emit('userSelected', {selectedUser: selectedUser});
             $("#forSending").toggleClass("hidden");
-            
+            //fix this
         
     })
 

@@ -11,10 +11,18 @@ function returnMessages(from, to) {
       todb
         .findAll({
           where: {
-            [Op.or]: {
-              from: from,
-              to: from
-            } //All messages from from and to from
+            [Op.or]: [{
+              [Op.and]: [{
+                from: from,
+                to: to
+              }]},
+
+              {[Op.and]: [{
+                from: to,
+                to: from
+              }]}
+              
+             ] //All messages from from and to from
           }
         })
         .then(messages => {
