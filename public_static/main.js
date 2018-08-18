@@ -30,8 +30,9 @@ function getAllUsers()
         $.post('/allusers', (JSONdata)=>{
 
             data=JSON.parse(JSONdata);
-            $("#userlist").html("");
+            $("#alluserslist").html("");
             dataset=new Set(data);
+
             dataset.forEach((user)=>{
                 
                 $("#alluserslist").append($("<li>", {class: "userlistitem"}).html(user));
@@ -66,7 +67,7 @@ window.onload=function()
         }
     })
 
-    getAllUsers();
+   
 
     
 
@@ -84,14 +85,24 @@ window.onload=function()
         
     })
 
+    function sendMessage()
+    {
+        socket.emit('send', {
+            message: $("#message").val()
+        })
+    }
+
    
     $("#sendmessage").click(
-        ()=>{
-            socket.emit('send', {
-                message: $("#message").val()
-            })
-        }
+      ()=> {sendMessage();}
     )
+
+    $("#message").keypress((e)=>{
+        if(e.which==13)
+        {
+            sendMessage();
+        }
+    });
 
     socket.on('message', (data)=>{
 
@@ -123,6 +134,7 @@ window.onload=function()
   socket.on('updatelist', ()=>{
 
     refreshUserList();
+    getAllUsers();
 
   });
   
