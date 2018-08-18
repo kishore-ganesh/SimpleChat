@@ -24,5 +24,6 @@ models.usermodel.sync().then(() => {
   app.use(express.static("public_static"));
 });
 
+var port=process.env.PORT || 4000;
 
-server.listen(80);
+server.listen(port);
