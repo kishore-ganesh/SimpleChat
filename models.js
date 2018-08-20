@@ -1,12 +1,33 @@
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize({
-  host: "localhost",
-  dialect: "sqlite",
-  operatorsAliases: false,
-
+var sequelize;
+if(process.env.DATABASE_URL)
+{
+   sequelize = new Sequelize(process.env.DATABASE_URL, 
+{
+ 
+  
+  dialect: "postgres",
+  protocol: "postgres",
+  
+ 
   // SQLite only
-  storage: "database.sqlite"
+ 
 });
+
+}
+
+else
+{
+   sequelize = new Sequelize('chat', 'simple', 'chat', 
+  {
+   
+    dialect: "postgres",
+   
+    // SQLite only
+   
+  });
+  
+}
 
 sequelize
   .authenticate()
