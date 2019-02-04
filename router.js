@@ -25,7 +25,12 @@ router.post("/users", (req, res) => {
 
 router.post("/allUsers", (req, res)=>{
 
-  controller.getAllUsers().then((userslist)=>{
+  let username;
+  if(req.user)
+  {
+    username = req.user.username;
+  }
+  controller.getAllUsers(username).then((userslist)=>{
     console.log(userslist);
     res.send(JSON.stringify(userslist));
   })
@@ -68,5 +73,35 @@ router.post("/register", (req, res) => {
   //console.log(username);
    // implement auto log in
 });
+
+router.post("/newgroup", (req, res)=>{
+  if(req.user)
+  {
+    controller.createGroup(req.body.group);
+  }
+})
+
+router.post("/registertogroup", (req, res)=>{
+  let groupname = req.body.groupname;
+  if(req.user)
+  {
+    let username = req.user.username; // Check
+    controller.addUserToGroup(groupname, username);
+  }
+
+  res.send("");
+  
+})
+
+
+
+router.post("/getgroupmessages", (req, res)=>{
+  let groupname = req.body.groupname;
+  controller.fetchMessagesFromGroup(groupname).then((messages)=>{
+    res.send(JSON.stringify(messages));
+  })
+})
+
+
 
 module.exports = router;

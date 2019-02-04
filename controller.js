@@ -11,18 +11,25 @@ function returnMessages(from, to) {
       todb
         .findAll({
           where: {
-            [Op.or]: [{
-              [Op.and]: [{
-                from: from,
-                to: to
-              }]},
+            [Op.or]: [
+              {
+                [Op.and]: [
+                  {
+                    from: from,
+                    to: to
+                  }
+                ]
+              },
 
-              {[Op.and]: [{
-                from: to,
-                to: from
-              }]}
-              
-             ] //All messages from from and to from
+              {
+                [Op.and]: [
+                  {
+                    from: to,
+                    to: from
+                  }
+                ]
+              }
+            ] //All messages from from and to from
           }
         })
         .then(messages => {
@@ -66,35 +73,107 @@ function createUser(username, password) {
   });
 }
 
+function createGroup(group) {
+  let groupdb = models.defineGroup();
+  groupdb.sync().then(() => {
+    groupdb.create({
+      groupname: group.name,
+      members: JSON.stringify(group.members)
+    });
+  });
+}
+
+function addUserToGroup(groupname, username) {
+  let groupdb = models.defineGroup();
+  groupdb.sync.then(() => {
+    groupdb
+      .findOne({
+        where: {
+          groupname: groupname
+        }
+      })
+      .then(group => {
+        let members = JSON.parse(group.members);
+        if (members.find(username) == undefined) {
+          groupdb.update({
+            where: {
+              groupname: groupname
+            },
+            values: {
+              members: JSON.stringify([...members, username])
+            }
+          });
+        }
+      });
+  });
+}
+
+function fetchMessagesFromGroup(groupname) {
+  return new Promise((resolve, reject) => {
+    let groupdb = models.defineGroup();
+    groupdb.sync().then(() => {
+      resolve(
+        groupdb.findAll({
+          where: {
+            groupname: groupname
+          }
+        })
+      );
+    });
+  });
+}
+
+function addGroupMessage(groupname, message) {
+  let groupdb = models.defineMessagesForGroup(groupname);
+  groupdb.sync().then(() => {
+    groupdb.create({
+      message: message.data,
+      from: message.from
+    });
+  });
+}
+
 function getUserList() {
-    // console.log(users.length);
-    return models.users;
-    //make this more efficient
-  }
-
-function addToUserList(username)
-{
-    models.users.push(username);
+  // console.log(users.length);
+  return models.users;
+  //make this more efficient
 }
 
-function deleteFromUserList(username)
-{
-    models.users.splice(users.indexOf(username),1);
+function addToUserList(username) {
+  models.users.push(username);
 }
 
-function getAllUsers()
-{
- return new Promise((resolve, reject)=>{
-  var userslist=[];
-  usermodel.findAll({attributes:['username']}).then(list=>{
-    list.forEach((listitem)=>{
-      userslist.push(listitem.username);
-    })
+function deleteFromUserList(username) {
+  models.users.splice(users.indexOf(username), 1);
+}
 
-    resolve(userslist);
+function getAllUsers(username) {
+  return new Promise((resolve, reject) => {
+    var userslist = [];
+    usermodel.findAll({ attributes: ["username"] }).then(list => {
+      list.forEach(listitem => {
+        userslist.push({ name: listitem.username, type: "user" });
+      });
 
-  })
- })
+      let groupmodel = models.defineGroup();
+      groupmodel.sync().then(() => {
+        groupmodel.findAll({}).then(groups => {
+          console.log("GROUPS: "+groups);
+          groups.forEach(group => {
+            if (username) {
+              let members = JSON.parse(group.members);
+              if (members.find((member)=>{
+                return member == username;
+              })) {
+                userslist.push({ name: group.groupname, type: "group" }); //Add requisite data here?
+              }
+            }
+          });
+          resolve(userslist);
+        });
+      });
+    });
+  });
 }
 
 module.exports = {
@@ -106,5 +185,9 @@ module.exports = {
   getUserList,
   addToUserList,
   deleteFromUserList,
-  getAllUsers
+  getAllUsers,
+  createGroup,
+  addUserToGroup,
+  addGroupMessage,
+  fetchMessagesFromGroup
 };

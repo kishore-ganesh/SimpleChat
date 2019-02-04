@@ -19,6 +19,7 @@ function onSocketConnection(socket) {
     var username;  //where was username defined
     //sending username is nsecure
     var selectedUser;
+    var selectedType;
     var userdb;
     console.log("onSocketConnection");
     //console.log(user6s);
@@ -44,21 +45,50 @@ function onSocketConnection(socket) {
     //     items:[{from:"server", to: "client", messages: "initialized"}]
     // })
 
+    //User gets shown only those groups in which he's in. On user selected, he gets added to the room.
+    socket.on("addUserToGroup", data=>{
+      controller.addUserToGroup(selectedUser, data.username);
+    });
+
+    socket.on("createGroup", data=>{
+      console.log("CREATING GROUP");
+      controller.createGroup(data);
+    })
     socket.on("userSelected", data => {
       console.log("emitting");
-      console.log(username);
+      // console.log(username);
       selectedUser = data.selectedUser;
+      selectedType = data.type;
       console.log(selectedUser+" "+username);
-      controller.returnMessages(selectedUser, username).then(messages => {
-        io.to(username).emit("message", { items: messages });
-      });
+
+      if(selectedType=="user")
+      {
+        controller.returnMessages(selectedUser, username).then(messages => {
+          io.to(username).emit("message", { items: messages });
+        });
+      }
+
+      else{
+        controller.fetchMessagesFromGroup(data,selectedUser).then((messages)=>{
+          io.to(username).emit("message", {items: messages});
+        })
+      }
+      
     });
 
     socket.on("send", data => {
       console.log("sending");
       //  to=data.to;
 
-      sendMessage(username, selectedUser, data.message);
+      
+      if(selectedType=="user")
+      {
+        sendMessage(username, selectedUser, data.message);
+      }
+      else{
+        sendGroupMessage(selectedUser, username, data.message);
+      }
+      
     });
 
     socket.on("disconnect", () => {
@@ -72,6 +102,13 @@ function onSocketConnection(socket) {
       io.emit("updatelist");
     });
   }
+}
+
+function sendGroupMessage(groupname, from, message)
+{
+  io.to(groupname).emit(message);
+  let groupmessagedb = models.defineMessagesForGroup(groupname);
+  controller.sendGroupMessage(groupname, from, message);
 }
 
 function sendMessage(from, to, message) {

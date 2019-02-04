@@ -21,7 +21,9 @@ else
    sequelize = new Sequelize('chat', 'simple', 'chat', 
   {
    
-    dialect: "postgres",
+    // dialect: "postgres",
+    dialect: "sqlite",
+    storage:"database.sqlite"
    
     // SQLite only
    
@@ -51,6 +53,22 @@ function defineModel(name) {
   });
 }
 
+function defineGroup()
+{
+  return sequelize.define("groups", {
+    groupname: {type: Sequelize.STRING, unique: true},
+    members: Sequelize.STRING,
+  })
+}
+
+function defineMessagesForGroup(name)
+{
+  return sequelize.define(name+"MES", {
+    from:Sequelize.STRING,
+    message: Sequelize.STRING
+  })
+}
+
 users = [];
 
-module.exports = { sequelize, defineModel, usermodel, users };
+module.exports = { sequelize, defineModel, usermodel, users, defineGroup, defineMessagesForGroup };

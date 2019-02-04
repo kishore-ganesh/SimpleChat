@@ -1,3 +1,5 @@
+
+let typemap = {};
 function refreshUserList()
 {
     return new Promise((resolve, reject)=>{
@@ -23,6 +25,8 @@ function refreshUserList()
     
 }
 
+
+
 function getAllUsers()
 {
     return new Promise((resolve, reject)=>{
@@ -35,7 +39,8 @@ function getAllUsers()
 
             dataset.forEach((user)=>{
                 
-                $("#alluserslist").append($("<li>", {class: "userlistitem"}).html(user));
+                typemap[user.name]=user.type;
+                $("#alluserslist").append($("<li>", {class: "userlistitem"}).html(user.name));
     
             })
 
@@ -67,6 +72,34 @@ window.onload=function()
         }
     })
 
+    $("#add-users").click(()=>{
+
+        $("#user-input-box").toggleClass("hidden");
+        $("#user-input-box").keypress((e)=>{
+            if(e.which==13)
+            {
+                socket.emit("addUserToGroup", {
+                    username: $("#user-input-box").val()
+                });
+            }
+        })
+
+    })
+
+    $("#create-group").click(()=>{
+        $("#group-input-box").toggleClass("hidden");
+        $("#group-input-box").keypress(e=>{
+            if(e.which==13)
+            {
+                console.log("CLICKED INPUT");
+                socket.emit("createGroup", {
+                    groupname: $("#group-input-box").val(),
+                    members: [username]
+                })
+            }
+        })
+    })
+
    
 
     
@@ -77,9 +110,22 @@ window.onload=function()
                 
             console.log("clicked")
             selectedUser=e.currentTarget.innerHTML;
+            let type = typemap[selectedUser];
+            if(type=="group")
+            {
+                $("#add-users").removeClass("hidden");
+                
+            }
+
+            else{
+
+                $("#user-input-box").addClass("hidden");
+                $("#add-users").addClass("hidden");
+                
+            }
             console.log(selectedUser);
             $("#inbox").html("");
-            socket.emit('userSelected', {selectedUser: selectedUser});
+            socket.emit('userSelected', {selectedUser: selectedUser, type: type});
             $("#forSending").removeClass("hidden");
             //fix this
         
