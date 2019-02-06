@@ -31,7 +31,7 @@ router.post("/allUsers", (req, res)=>{
     username = req.user.username;
   }
   controller.getAllUsers(username).then((userslist)=>{
-    console.log(userslist);
+    // console.log(userslist);
     res.send(JSON.stringify(userslist));
   })
   

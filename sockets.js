@@ -32,8 +32,10 @@ function onSocketConnection(socket) {
       username = data.username;
       socket.join(username);
       controller.addToUserList(username);
+      controller.addUserToGroup("common", username);
       userdb = models.defineModel(username);
       userdb.sync();
+      
       io.emit("updatelist");
     });
 
@@ -52,6 +54,7 @@ function onSocketConnection(socket) {
 
     socket.on("createGroup", data=>{
       console.log("CREATING GROUP");
+      console.log(data);
       controller.createGroup(data);
     })
     socket.on("userSelected", data => {
@@ -69,7 +72,8 @@ function onSocketConnection(socket) {
       }
 
       else{
-        controller.fetchMessagesFromGroup(data,selectedUser).then((messages)=>{
+        socket.join(selectedUser);
+        controller.fetchMessagesFromGroup(data.selectedUser).then((messages)=>{
           io.to(username).emit("message", {items: messages});
         })
       }
@@ -98,6 +102,7 @@ function onSocketConnection(socket) {
 
       if (username) {
         controller.deleteFromUserList(username);
+
       }
       io.emit("updatelist");
     });
@@ -106,9 +111,15 @@ function onSocketConnection(socket) {
 
 function sendGroupMessage(groupname, from, message)
 {
-  io.to(groupname).emit(message);
-  let groupmessagedb = models.defineMessagesForGroup(groupname);
-  controller.sendGroupMessage(groupname, from, message);
+  io.to(groupname).emit("message", {items:[
+    {
+      from: from,
+      to: groupname,
+      messages: message
+    }
+  ]});
+  
+  controller.addGroupMessage(groupname, {from: from, data: message});
 }
 
 function sendMessage(from, to, message) {

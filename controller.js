@@ -4,6 +4,10 @@ var usermodel = models.usermodel;
 
 // fix this
 
+function initialize(){
+  createGroup({groupname: "common", members:[]});
+}
+
 function returnMessages(from, to) {
   return new Promise((resolve, reject) => {
     todb = models.defineModel(to);
@@ -77,7 +81,7 @@ function createGroup(group) {
   let groupdb = models.defineGroup();
   groupdb.sync().then(() => {
     groupdb.create({
-      groupname: group.name,
+      groupname: group.groupname,
       members: JSON.stringify(group.members)
     });
   });
@@ -85,7 +89,7 @@ function createGroup(group) {
 
 function addUserToGroup(groupname, username) {
   let groupdb = models.defineGroup();
-  groupdb.sync.then(() => {
+  groupdb.sync().then(() => {
     groupdb
       .findOne({
         where: {
@@ -94,15 +98,21 @@ function addUserToGroup(groupname, username) {
       })
       .then(group => {
         let members = JSON.parse(group.members);
-        if (members.find(username) == undefined) {
-          groupdb.update({
-            where: {
-              groupname: groupname
-            },
-            values: {
+        if (
+          members.find(member => {
+            member == username;
+          }) == undefined
+        ) {
+          groupdb.update(
+            {
               members: JSON.stringify([...members, username])
+            },
+            {
+              where: {
+                groupname: groupname
+              }
             }
-          });
+          );
         }
       });
   });
@@ -110,15 +120,17 @@ function addUserToGroup(groupname, username) {
 
 function fetchMessagesFromGroup(groupname) {
   return new Promise((resolve, reject) => {
-    let groupdb = models.defineGroup();
+    let groupdb = models.defineMessagesForGroup(groupname);
     groupdb.sync().then(() => {
-      resolve(
-        groupdb.findAll({
-          where: {
-            groupname: groupname
-          }
+      
+        groupdb.findAll().then((messages)=>{
+          
+          resolve(messages.map(message=>{
+        
+            return ({from: message.from, to: groupname, messages: message.message});
+          }));
         })
-      );
+      
     });
   });
 }
@@ -128,7 +140,7 @@ function addGroupMessage(groupname, message) {
   groupdb.sync().then(() => {
     groupdb.create({
       message: message.data,
-      from: message.from
+      from: message.from,
     });
   });
 }
@@ -157,14 +169,16 @@ function getAllUsers(username) {
 
       let groupmodel = models.defineGroup();
       groupmodel.sync().then(() => {
-        groupmodel.findAll({}).then(groups => {
-          console.log("GROUPS: "+groups);
+        groupmodel.findAll().then(groups => {
           groups.forEach(group => {
+            console.log(group.groupname);
             if (username) {
               let members = JSON.parse(group.members);
-              if (members.find((member)=>{
-                return member == username;
-              })) {
+              if (
+                members.find(member => {
+                  return member == username;
+                })
+              ) {
                 userslist.push({ name: group.groupname, type: "group" }); //Add requisite data here?
               }
             }
@@ -177,6 +191,7 @@ function getAllUsers(username) {
 }
 
 module.exports = {
+  initialize,
   returnMessages,
   updateDB,
   findUserbyID,

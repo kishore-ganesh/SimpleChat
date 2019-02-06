@@ -47,8 +47,6 @@ function getAllUsers()
           //  console.log("reachedEnd");
             
             resolve();
-    
-            
         })
     })
     
@@ -153,6 +151,7 @@ window.onload=function()
     socket.on('message', (data)=>{
 
         console.log("recieved")
+        console.log(data);
         //console.log(data);
         items=data.items;
         //console.log(data)
@@ -163,7 +162,7 @@ window.onload=function()
 
             //console.log(item.messages);
             
-            if((item.from==selectedUser && item.to==username)|| (item.to==selectedUser&&item.from==username))
+            if((item.from==selectedUser && item.to==username)|| (item.to==selectedUser))
            {
                var from=item.from;
                if(item.from==username)

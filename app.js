@@ -9,6 +9,7 @@ const session = require("express-session");
 const auth = require("./auth.js");
 const routes=require('./router.js');
 
+controller.initialize();
 sockets.initializeSocket(server);
 sockets.startListening();
 
